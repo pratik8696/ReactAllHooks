@@ -1,42 +1,77 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 
 import Card from '../UI/Card/Card';
 import classes from './Login.module.css';
 import Button from '../UI/Button/Button';
 
+const emailvalidator = (state, action) => {
+  if(action.type==='Email_Input')
+  {
+    return { value:action.val , isValid: action.val.includes('@') };
+  }
+  if(action.type==='Input_Check')
+  {
+    // now the previous values are stored in the values 
+    // of the state and this is now used to call the previous values of the state
+    return { value:state.value, isValid:state.value.includes('@') };
+  }
+  return {value: '', isValid: false };
+}
+
 const Login = (props) => {
-  const [enteredEmail, setEnteredEmail] = useState('');
-  const [emailIsValid, setEmailIsValid] = useState();
+  // const [enteredEmail, setEnteredEmail] = useState('');
+  // const [emailIsValid, setEmailIsValid] = useState();
   const [enteredPassword, setEnteredPassword] = useState('');
   const [passwordIsValid, setPasswordIsValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
 
-  useEffect(()=>{
-
-    const identifier = setTimeout(()=>{
-      console.log("Checking form validity");
-      setFormIsValid(
-        enteredEmail.includes('@') && enteredPassword.trim().length > 6
-      );
-    },1500);
-    
-    return ()=>{
-      clearTimeout(identifier);
-      console.log("Removed previous timer!!");
-    }
-    }, [enteredEmail, enteredPassword]);
-    
+  const [email, checkemail] = useReducer(emailvalidator,
+    {
+      value: '',
+      isValid: null
+    });
   
+  
+  // useEffect(()=>{
+
+  //   const identifier = setTimeout(()=>{
+  //     console.log("Checking form validity");
+  //     setFormIsValid(
+  //       enteredEmail.includes('@') && enteredPassword.trim().length > 6
+  //     );
+  //   },1500);
+
+  //   return ()=>{
+  //     clearTimeout(identifier);
+  //     console.log("Removed previous timer!!");
+  //   }
+  //   }, [enteredEmail, enteredPassword]);
+
+
   const emailChangeHandler = (event) => {
-    setEnteredEmail(event.target.value);  
+    // setEnteredEmail(event.target.value);
+    checkemail({
+      type:'Email_Input',val:event.target.value
+    });
+         setFormIsValid(
+        event.target.value.includes('@') && enteredPassword.trim().length > 6
+      );
+
   };
 
   const passwordChangeHandler = (event) => {
+    
     setEnteredPassword(event.target.value);
+
+    setFormIsValid(
+      event.target.value.includes('@') && enteredPassword.trim().length > 6
+    );
   };
 
   const validateEmailHandler = () => {
-    setEmailIsValid(enteredEmail.includes('@'));
+    checkemail({
+      type: 'Input_Check'
+    })
   };
 
   const validatePasswordHandler = () => {
@@ -45,30 +80,28 @@ const Login = (props) => {
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(enteredEmail, enteredPassword);
+    props.onLogin(email.value, enteredPassword);
   };
 
   return (
     <Card className={classes.login}>
       <form onSubmit={submitHandler}>
         <div
-          className={`${classes.control} ${
-            emailIsValid === false ? classes.invalid : ''
-          }`}
+          className={`${classes.control} ${email.isValid === false ? classes.invalid : ''
+            }`}
         >
           <label htmlFor="email">E-Mail</label>
           <input
             type="email"
             id="email"
-            value={enteredEmail}
+            value={email.value}
             onChange={emailChangeHandler}
             onBlur={validateEmailHandler}
           />
         </div>
         <div
-          className={`${classes.control} ${
-            passwordIsValid === false ? classes.invalid : ''
-          }`}
+          className={`${classes.control} ${passwordIsValid === false ? classes.invalid : ''
+            }`}
         >
           <label htmlFor="password">Password</label>
           <input
