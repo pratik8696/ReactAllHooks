@@ -1,33 +1,29 @@
-import React, { useState, useEffect, useReducer } from 'react';
-
+import React, { useContext, useState, useEffect, useReducer } from 'react';
+import AuthContext from '../Store/auth-context';
 import Card from '../UI/Card/Card';
 import classes from './Login.module.css';
 import Button from '../UI/Button/Button';
 
 const emailvalidator = (state, action) => {
-  if(action.type==='Email_Input')
-  {
-    return { value:action.val , isValid: action.val.includes('@') };
+  if (action.type === 'Email_Input') {
+    return { value: action.val, isValid: action.val.includes('@') };
   }
-  if(action.type==='Input_Check')
-  {
+  if (action.type === 'Input_Check') {
     // now the previous values are stored in the values 
     // of the state and this is now used to call the previous values of the state
-    return { value:state.value, isValid:state.value.includes('@') };
+    return { value: state.value, isValid: state.value.includes('@') };
   }
-  return {value: '', isValid: false };
+  return { value: '', isValid: false };
 }
 
-const passwordvalidator = (state,action)=>{
-  if(action.type==='Password_Input')
-  {
-    return { value: action.val, isValid: action.val.trim().length>6 };
+const passwordvalidator = (state, action) => {
+  if (action.type === 'Password_Input') {
+    return { value: action.val, isValid: action.val.trim().length > 6 };
   }
-  if(action.type==='Password_Check')
-  {
-    return { value: state.value, isValid: state.value.trim().length>6};
+  if (action.type === 'Password_Check') {
+    return { value: state.value, isValid: state.value.trim().length > 6 };
   }
-  return {value:'',isValid:false};
+  return { value: '', isValid: false };
 }
 
 const Login = (props) => {
@@ -36,57 +32,57 @@ const Login = (props) => {
   // const [enteredPassword, setEnteredPassword] = useState('');
   // const [passwordIsValid, setPasswordIsValid] = useState();
   const [formIsValid, setFormIsValid] = useState(false);
-
+  const ctx = useContext(AuthContext);
   const [email, checkemail] = useReducer(emailvalidator,
     {
       value: '',
       isValid: null
     });
-  const [password,checkpassword]=useReducer(passwordvalidator,
+  const [password, checkpassword] = useReducer(passwordvalidator,
     {
-      value:'',
-      isValid:null
+      value: '',
+      isValid: null
     });
-  
-    // we want the use effect to only check our form validity so
-    // we can only set it up to check the isValid parameter and lighten the tasks associated with it
-    // so now we will use object destructuring and make the code
-    const {isValid:emailIsValid}=email;
-    const {isValid:passwordIsValid}=password;
 
-  useEffect(()=>{
+  // we want the use effect to only check our form validity so
+  // we can only set it up to check the isValid parameter and lighten the tasks associated with it
+  // so now we will use object destructuring and make the code
+  const { isValid: emailIsValid } = email;
+  const { isValid: passwordIsValid } = password;
 
-    const identifier = setTimeout(()=>{
+  useEffect(() => {
+
+    const identifier = setTimeout(() => {
       console.log("Checking form validity");
       setFormIsValid(
         emailIsValid && passwordIsValid
       );
-    },1500);
+    }, 1500);
 
-    return ()=>{
+    return () => {
       clearTimeout(identifier);
       console.log("Removed previous timer!!");
     }
-    }, [emailIsValid, passwordIsValid]);
+  }, [emailIsValid, passwordIsValid]);
 
 
   const emailChangeHandler = (event) => {
     // setEnteredEmail(event.target.value);
     checkemail({
-      type:'Email_Input',val:event.target.value
+      type: 'Email_Input', val: event.target.value
     });
-         setFormIsValid(
-        event.target.value.includes('@') && password.value.trim().length > 6
-      );
+    setFormIsValid(
+      event.target.value.includes('@') && password.value.trim().length > 6
+    );
 
   };
 
   const passwordChangeHandler = (event) => {
-    
+
     // setEnteredPassword(event.target.value);
     checkpassword({
-      type:'Password_Input',
-      val:event.target.value
+      type: 'Password_Input',
+      val: event.target.value
     })
 
     setFormIsValid(
@@ -103,13 +99,13 @@ const Login = (props) => {
   const validatePasswordHandler = () => {
     // setPasswordIsValid(enteredPassword.trim().length > 6);
     checkpassword({
-      type:'Password_Check'
+      type: 'Password_Check'
     })
   };
 
   const submitHandler = (event) => {
     event.preventDefault();
-    props.onLogin(email.value, password.value);
+    ctx.onLogin(email.value, password.value);
   };
 
   return (
